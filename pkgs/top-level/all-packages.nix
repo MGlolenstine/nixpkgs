@@ -36745,4 +36745,6 @@ with pkgs;
   swift-corelibs-libdispatch = callPackage ../development/libraries/swift-corelibs-libdispatch { };
 
   swaysettings = callPackage ../applications/misc/swaysettings { };
+
+  libjpeg8 = callPackage ../development/libraries/libjpeg8 { };
 }
