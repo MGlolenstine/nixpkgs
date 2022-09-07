@@ -36747,4 +36747,6 @@ with pkgs;
   swaysettings = callPackage ../applications/misc/swaysettings { };
 
   libjpeg8 = callPackage ../development/libraries/libjpeg8 { };
+    
+  connectiq-sdk-manager = callPackage ../development/tools/connectiq-sdk-manager { };
 }
