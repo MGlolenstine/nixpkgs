@@ -35087,6 +35087,8 @@ with pkgs;
 
   brgenml1cupswrapper = callPackage ../misc/cups/drivers/brgenml1cupswrapper {};
 
+  brother-dcpj105 = callPackage ../misc/cups/drivers/brother/dcpj105 { };
+
   brightnessctl = callPackage ../misc/brightnessctl { };
 
   cached-nix-shell = callPackage ../tools/nix/cached-nix-shell {};
