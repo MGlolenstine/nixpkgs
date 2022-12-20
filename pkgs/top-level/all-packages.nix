@@ -28353,6 +28353,8 @@ with pkgs;
 
   pmbootstrap = python3Packages.callPackage ../tools/misc/pmbootstrap { };
 
+  serial-studio = callPackage ../tools/misc/serial-studio { };
+
   shepherd = nodePackages."@nerdwallet/shepherd";
 
   skate = callPackage ../applications/misc/skate { };
