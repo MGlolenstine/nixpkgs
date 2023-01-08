@@ -1,5 +1,5 @@
 { lib
-, stdenv
+, stdenv_32bit
 , fetchurl
 , cups
 , dpkg
@@ -12,6 +12,7 @@
 , gnugrep
 , which
 , gawk
+, autoPatchelfHook
 }:
 
 let
@@ -19,7 +20,7 @@ let
   model = "dcpj105";
 in
 rec {
-  driver = stdenv.mkDerivation {
+  driver = stdenv_32bit.mkDerivation {
     pname = "${model}-lpr";
     inherit version;
 
@@ -28,31 +29,36 @@ rec {
       sha256 = "3de559fffb316c4fad4d71174d025d0f7c04204c1cd3dca1805f5f736ea5e794";
     };
 
-    nativeBuildInputs = [ dpkg makeWrapper ];
+    nativeBuildInputs = [ dpkg makeWrapper autoPatchelfHook ];
     buildInputs = [ cups ghostscript a2ps gawk ];
-    unpackPhase = "dpkg-deb -x $src $out";
+    # unpackPhase = "dpkg-deb -x $src $out";
+    unpackPhase = "true";
 
+    # installPhase = ''
+    #   substituteInPlace $out/opt/brother/Printers/${model}/lpd/filter${model} \
+    #   --replace /opt "$out/opt"
+
+    #   patchelf --set-interpreter $(cat $NIX_CC/nix-support/dynamic-linker) \
+    #   $out/opt/brother/Printers/${model}/lpd/br${model}filter
+
+    #   mkdir -p $out/lib/cups/filter/
+    #   ln -s $out/opt/brother/Printers/${model}/lpd/filter${model} $out/lib/cups/filter/brother_lpdwrapper_${model}
+
+    #   wrapProgram $out/opt/brother/Printers/${model}/lpd/filter${model} \
+    #     --prefix PATH ":" ${lib.makeBinPath [
+    #       gawk
+    #       ghostscript
+    #       a2ps
+    #       file
+    #       gnused
+    #       gnugrep
+    #       coreutils
+    #       which
+    #     ]}
+    # '';
     installPhase = ''
-      substituteInPlace $out/opt/brother/Printers/${model}/lpd/filter${model} \
-      --replace /opt "$out/opt"
-
-      patchelf --set-interpreter $(cat $NIX_CC/nix-support/dynamic-linker) \
-      $out/opt/brother/Printers/${model}/lpd/br${model}filter
-
-      mkdir -p $out/lib/cups/filter/
-      ln -s $out/opt/brother/Printers/${model}/lpd/filter${model} $out/lib/cups/filter/brother_lpdwrapper_${model}
-
-      wrapProgram $out/opt/brother/Printers/${model}/lpd/filter${model} \
-        --prefix PATH ":" ${lib.makeBinPath [
-          gawk
-          ghostscript
-          a2ps
-          file
-          gnused
-          gnugrep
-          coreutils
-          which
-        ]}
+      mkdir -p $out
+      dpkg -x $src $out
     '';
 
     meta = with lib; {
@@ -66,7 +72,7 @@ rec {
     };
   };
 
-  cupswrapper = stdenv.mkDerivation {
+  cupswrapper = stdenv_32bit.mkDerivation {
     pname = "${model}-cupswrapper";
     inherit version;
 
@@ -76,16 +82,21 @@ rec {
     };
 
     nativeBuildInputs = [ dpkg makeWrapper ];
-    buildInputs = [ cups ghostscript a2ps gawk ];
-    unpackPhase = "dpkg-deb -x $src $out";
+    buildInputs = [ cups ghostscript a2ps gawk autoPatchelfHook ];
+    # unpackPhase = "dpkg-deb -x $src $out";
+    unpackPhase = "true";
 
+    # installPhase = ''
+    #   for f in $out/opt/brother/Printers/${model}/cupswrapper/cupswrapper${model}; do
+    #     wrapProgram $f --prefix PATH : ${lib.makeBinPath [ coreutils ghostscript gnugrep gnused ]}
+    #   done
+
+    #   mkdir -p $out/share/cups/model
+    #   ln -s $out/opt/brother/Printers/${model}/cupswrapper/brother_${model}_printer_en.ppd $out/share/cups/model/
+    # '';
     installPhase = ''
-      for f in $out/opt/brother/Printers/${model}/cupswrapper/cupswrapper${model}; do
-        wrapProgram $f --prefix PATH : ${lib.makeBinPath [ coreutils ghostscript gnugrep gnused ]}
-      done
-
-      mkdir -p $out/share/cups/model
-      ln -s $out/opt/brother/Printers/${model}/cupswrapper/brother_${model}_printer_en.ppd $out/share/cups/model/
+      mkdir -p $out
+      dpkg -x $src $out  
     '';
 
     meta = with lib; {
