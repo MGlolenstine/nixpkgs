@@ -143,6 +143,10 @@ let
         nspr
         nss
         systemd
+
+        # Test for libclang
+        llvmPackages_14.clang-unwrapped
+        glibc
       ];
   };
 
@@ -156,6 +160,12 @@ runCommand drvName
     export PUB_CACHE=''${PUB_CACHE:-"$HOME/.pub-cache"}
     export ANDROID_EMULATOR_USE_SYSTEM_LIBS=1
     ${fhsEnv}/bin/${drvName}-fhs-env ${flutter}/bin/flutter --no-version-check "$@"
+  '';
+  dartScript = ''
+    #!${bash}/bin/bash
+    export PUB_CACHE=''${PUB_CACHE:-"$HOME/.pub-cache"}
+    export ANDROID_EMULATOR_USE_SYSTEM_LIBS=1
+    ${fhsEnv}/bin/${drvName}-fhs-env ${flutter}/bin/dart "$@"
   '';
   preferLocalBuild = true;
   allowSubstitutes = false;
@@ -184,7 +194,9 @@ runCommand drvName
   ln -sf ${dart} $out/bin/cache/dart-sdk
 
   echo -n "$startScript" > $out/bin/${pname}
+  echo -n "$dartScript" > $out/bin/dart
   chmod +x $out/bin/${pname}
+  chmod +x $out/bin/dart
 '') self;
 in
 self
