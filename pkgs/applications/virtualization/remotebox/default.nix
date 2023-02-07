@@ -1,28 +1,47 @@
-{ lib, stdenv, fetchurl, makeWrapper, perl, perlPackages }:
+{ lib, stdenv, fetchurl, makeWrapper, perl534, perl534Packages, pkgs }:
 
 stdenv.mkDerivation rec {
   pname = "remotebox";
-  version = "2.7";
+  version = "3.2";
 
   src = fetchurl {
     url = "http://remotebox.knobgoblin.org.uk/downloads/RemoteBox-${version}.tar.bz2";
-    sha256 = "0csf6gd7pqq4abia4z0zpzlq865ri1z0821kjy7p3iawqlfn75pb";
+    sha256 = "sha256-nlOPepd4ds6wKxoaBrMgHuNUjsIPpensUvH2YHHsgUg=";
   };
 
-  buildInputs = with perlPackages; [ perl Glib Gtk2 Pango SOAPLite ];
+  perlPkgs = with perl534Packages; [
+    perl534
+    Glib
+    Gtk3
+    Pango
+    SOAPLite
+    ClassInspector
+    URI
+    CairoGObject
+    Cairo
+    GlibObjectIntrospection
+  ];
+
+  buildInputs = perlPkgs;
+
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -pv $out/bin
 
     substituteInPlace remotebox --replace "\$Bin/" "\$Bin/../"
+    echo $PERL5LIB
     install -v -t $out/bin remotebox
-    wrapProgram $out/bin/remotebox --prefix PERL5LIB : $PERL5LIB
+    # wrapProgram $out/bin/remotebox --prefix PERL5LIB : "${with perl534Packages; makePerlPath perlPkgs }"
 
     cp -av docs/ share/ $out
 
     mkdir -pv $out/share/applications
     cp -pv packagers-readme/*.desktop $out/share/applications
+  '';
+
+  postFixup = ''
+    wrapProgram $out/bin/remotebox --prefix PERL5LIB : "${with perl534Packages; makePerlPath perlPkgs }"
   '';
 
   meta = with lib; {
