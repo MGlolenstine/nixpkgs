@@ -51,7 +51,7 @@ stdenv.mkDerivation {
   '';
 
   meta = with lib; {
-    homepage = https://developer.garmin.com/connect-iq/sdk/; 
+    homepage = "https://developer.garmin.com/connect-iq/reference-guides/monkey-c-command-line-setup/#linuxinstallation"; 
     license = licenses.unfree;
     platforms = platforms.linux;
     maintainers = [ maintainers.mglolenstine ];
