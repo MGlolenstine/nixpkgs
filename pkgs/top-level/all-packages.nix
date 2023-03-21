@@ -10187,6 +10187,10 @@ with pkgs;
 
   ncftp = callPackage ../tools/networking/ncftp { };
 
+  ncs-toolchain = callPackage ../development/embedded/nordic/toolchains { };
+
+  ncs-sdk = callPackage ../development/embedded/nordic/sdk { };
+
   ncgopher = callPackage ../applications/networking/ncgopher { };
 
   ncompress = callPackage ../tools/compression/ncompress { };
