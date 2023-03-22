@@ -34,23 +34,47 @@ stdenv.mkDerivation {
     cmake
   ];
 
-  buildPhase = ''
+  # build phases
+  phases = [
+    "createFoldersPhase"
+    "initPhase"
+    "updatePhase"
+  ];
+
+  createFoldersPhase = ''
+    mkdir -p sdk/manifest
     mkdir -p $out/sdk
     mkdir -p $out/lib/cmake
+  '';
 
-    cp $src $out/sdk/west.yml
-    west -v init -l $out/sdk/
-    cd $out/sdk
+  initPhase = ''
+    cp $src sdk/manifest/west.yml
+    cd sdk
+    echo $(pwd)
+    west -v init -l manifest
     west -v update
+    find . -name ".git" -type d -exec rm -rf {} +
 
+    ls -lah
+    ls -lah ..
+    echo `pwd`
+    cp -a /build/sdk $out/
+    ls -lah $out/
+  '';
+
+  updatePhase = ''
     # Redirect to the package and not $HOME
-    echo "sed -i \"s,\$ENV{HOME}/.cmake,$out/lib/cmake,g\" $out/zephyr/share/zephyr-package/cmake/zephyr_export.cmake"
-    echo "sed -i \"s,~/.cmake,$out/lib/cmake,g\" $out/zephyr/share/zephyr-package/cmake/zephyr_export.cmake"
-    echo sed -i 's,\$\{CMAKE_CURRENT_LIST_DIR\}/\$\{MD5_INFILE\},'$out'/tmp/\$\{MD5_INFILE\},g' $out/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+    echo "sed -i \"s,\$ENV{HOME}/.cmake,$out/lib/cmake,g\" $out/sdk/zephyr/share/zephyr-package/cmake/zephyr_export.cmake"
+    echo "sed -i \"s,~/.cmake,$out/lib/cmake,g\" $out/sdk/zephyr/share/zephyr-package/cmake/zephyr_export.cmake"
+    echo sed -i 's,\$\{CMAKE_CURRENT_LIST_DIR\}/\$\{MD5_INFILE\},'$out'/tmp/\$\{MD5_INFILE\},g' $out/sdk/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
     
-    sed -i "s,\$ENV{HOME}/.cmake,$out/lib/cmake,g" $out/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
-    sed -i "s,~/.cmake,$out/lib/cmake,g" $out/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
-    sed -i 's,\$\{CMAKE_CURRENT_LIST_DIR\}/\$\{MD5_INFILE\},'$out'/tmp/\$\{MD5_INFILE\},g' $out/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+    sed -i "s,\$ENV{HOME}/.cmake,$out/lib/cmake,g" $out/sdk/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+    sed -i "s,~/.cmake,$out/lib/cmake,g" $out/sdk/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+    sed -i 's,'\$\{CMAKE_CURRENT_LIST_DIR\}/\$\{MD5_INFILE\}',\'"$out"'/tmp/\$\{MD5_INFILE\},g' $out/sdk/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+
+    sed -i "s,\$ENV{HOME}/.cmake,$out/lib/cmake,g" $out/sdk/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
+    sed -i "s,~/.cmake,$out/lib/cmake,g" $out/sdk/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
+    sed -i 's,'\$\{CMAKE_CURRENT_LIST_DIR\}/\$\{MD5_INFILE\}',\'"$out"'/tmp/\$\{MD5_INFILE\},g' $out/sdk/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
     
     west -v zephyr-export
   '';

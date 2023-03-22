@@ -15,7 +15,8 @@ stdenv.mkDerivation rec {
   
   src = fetchNordicSdk {
     inherit pname version lib stdenv pkgs;
-    outputHash = "sha256-zNrRPBjD745LS6ZtZ8YpJx7gw/+hpaOhVHHOhFIq4nI=";
+    # outputHash = "sha256-/fOg0wjfPDXqvYUuuznnbHuu2Fa4Tz69xOPYoQ0HrBE=";
+    outputHash = lib.fakeHash;
   };
 
   dontUnpack = true;
