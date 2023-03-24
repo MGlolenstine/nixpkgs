@@ -15,8 +15,7 @@ stdenv.mkDerivation rec {
   
   src = fetchNordicSdk {
     inherit pname version lib stdenv pkgs;
-    # outputHash = "sha256-/fOg0wjfPDXqvYUuuznnbHuu2Fa4Tz69xOPYoQ0HrBE=";
-    outputHash = lib.fakeHash;
+    outputHash = "sha256-ghVSoL5XUutm3kHOasGgf9jYRw4/iMamNmDMVS19dTk=";
   };
 
   dontUnpack = true;
@@ -27,40 +26,40 @@ stdenv.mkDerivation rec {
     git
   ];
 
-  # writeScriptBin "install-sdk" 
-  #   ''
-  #     OUT=$HOME/.ncs-sdk/${version}
-  #     mkdir -p $OUT
-  #     cp $src $OUT/west.yml
-  #     west -v init -l $OUT/west.yml
-  #     PREVIOUS_DIR=$(pwd)
-  #     cd $OUT
-  #     west -v update
-  #     west -v zephyr-export
-  #     cd $PREVIOUS_DIR
-  #   '';
+  phases = [
+    "buildPhase"
+    "zephyrExport"
+  ];
 
-  # buildPhase = ''
-  #   mkdir -p $out/sdk
-  #   mkdir -p $out/bin
+  buildPhase = ''
+    mkdir -p $out
+    cp -a $src/sdk $out/
+    
+    mkdir -p $out/lib/cmake/packages
+  '';
+    
+  zephyrExport = ''
+    set -e
 
-  #   chmod 664 $src
-  #   cp $src $out/sdk/west.yml
+    PWD=$out/sdk/zephyr/share/zephyr-package/cmake
 
-  #   cat << EOF > $out/bin/install-sdk
-  #   OUT=\$HOME/.ncs-sdk/${version}
-  #   mkdir -p \$OUT
-  #   cp $src \$OUT/west.yml
-  #   west -v init -l \$OUT
-  #   PREVIOUS_DIR=\$(pwd)
-  #   cd \$OUT
-  #   west -v update
-  #   west -v zephyr-export
-  #   cd \$PREVIOUS_DIR
-  #   EOF
+    hash=$(echo "$PWD" | md5sum | cut -d ' ' -f 1)
 
-  #   chmod +x $out/bin/install-sdk
-  # '';
+    if [ "$(uname)" = "Darwin" ]; then
+      defaults write org.cmake.packages -dict-add Zephyr "$PWD"
+    else
+      mkdir -p $out/lib/cmake/packages/Zephyr
+      echo "$PWD" > $out/lib/cmake/packages/Zephyr/$hash
+    fi
+
+    echo "Zephyr ($PWD)"
+    echo "has been added to the user package registry in:"
+    if [ "$(uname)" = "Darwin" ]; then
+      echo "defaults read org.cmake.packages Zephyr"
+    else
+      echo "$out/lib/cmake/packages/Zephyr"
+    fi
+  '';
 
   meta = with lib; {
     description = "Nordic SDK";
