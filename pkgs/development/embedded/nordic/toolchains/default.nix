@@ -1,6 +1,7 @@
 { fetchurl
 , lib
 , stdenv
+, 
 }:
 
 stdenv.mkDerivation rec {
@@ -13,6 +14,10 @@ stdenv.mkDerivation rec {
   };
 
   dontUnpack = true;
+
+  nativeBuildInputs = [
+    autoPatchelfHook
+  ];
 
   installPhase = ''
     mkdir -p $out/
