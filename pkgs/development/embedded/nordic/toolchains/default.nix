@@ -1,7 +1,17 @@
 { fetchurl
 , lib
 , stdenv
-, 
+, autoPatchelfHook
+# Runtime dependencies
+, e2fsprogs
+, libidn2
+, gnutls
+, libxcrypt
+, gmp
+, udev
+, libunistring
+, db
+, ncurses
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +27,19 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     autoPatchelfHook
+    libunistring
+  ];
+
+  buildInputs = [
+    e2fsprogs
+    libidn2
+    gnutls
+    libxcrypt
+    gmp
+    udev
+    libunistring
+    db
+    ncurses
   ];
 
   installPhase = ''
