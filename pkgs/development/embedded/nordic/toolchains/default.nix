@@ -27,10 +27,9 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     autoPatchelfHook
-    libunistring
   ];
 
-  buildInputs = [
+  propagatedBuildInputs = [
     e2fsprogs
     libidn2
     gnutls
