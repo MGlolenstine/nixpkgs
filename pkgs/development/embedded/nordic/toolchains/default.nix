@@ -44,7 +44,6 @@ stdenv.mkDerivation rec {
   installPhase = ''
     mkdir -p $out/
     tar xf $src -C $out/
-    patchelf --replace-needed libunistring.so.2 libunistring.so.5 $out/usr/lib/x86_64-linux-gnu/libpsl.so.5.3.2
   '';
   
   meta = with lib; {
