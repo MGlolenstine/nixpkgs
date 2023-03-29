@@ -1,74 +1,15 @@
-{ lib
-, stdenv
-, fetchPypi
-, writeText
-, buildPythonPackage
-, pythonOlder
-
-# https://github.com/matplotlib/matplotlib/blob/main/doc/devel/dependencies.rst
-# build-system
-, pkg-config
-, pybind11
-, setuptools
-, setuptools-scm
-
-# native libraries
-, ffmpeg-headless
-, fontconfig
-, freetype
-, imagemagick
-, qhull
-
-# propagates
-, contourpy
-, cycler
-, fonttools
-, kiwisolver
-, numpy
-, packaging
-, pillow
-, pyparsing
-, python-dateutil
-
-# optional
-, importlib-resources
-
-# GTK3
-, enableGtk3 ? false
-, cairo
-, gobject-introspection
-, gtk3
-, pycairo
-, pygobject3
-
-# Tk
-, enableTk ? !stdenv.isDarwin # darwin has its own "MacOSX" backend
-, tcl
-, tk
-, tkinter
-
-# Ghostscript
-, enableGhostscript ? true
-, ghostscript
-
-# Qt
-, enableQt ? false
-, pyqt5
-
-# Webagg
-, enableWebagg ? false
-, tornado
-
-# nbagg
-, enableNbagg ? false
-, ipykernel
-
-# darwin
-, Cocoa
-
+{ lib, stdenv, fetchPypi, writeText, buildPythonPackage, isPy3k, pycairo
+, which, cycler, python-dateutil, numpy, pyparsing, sphinx, tornado, kiwisolver
+, freetype, qhull, libpng, pkg-config, mock, pytz, pygobject3, gobject-introspection
+, certifi, pillow, fonttools, setuptools-scm, setuptools-scm-git-archive, packaging
+, enableGhostscript ? true, ghostscript, gtk3
+, enableGtk3 ? false, cairo
+# darwin has its own "MacOSX" backend
+, enableTk ? !stdenv.isDarwin, tcl, tk, tkinter
+, enableQt ? false, pyqt5
 # required for headless detection
-, libX11
-, wayland
+, libX11, wayland
+, Cocoa
 }:
 
 let
@@ -76,18 +17,77 @@ let
 in
 
 buildPythonPackage rec {
-  version = "3.7.0";
+  version = "3.5.3";
   pname = "matplotlib";
-  format = "pyproject";
+  format = "setuptools";
 
-  disabled = pythonOlder "3.9";
+  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-j279MTQw1+9wo4oydigcsuhkazois7IesifaIOFeaBM=";
+    sha256 = "sha256-M5ysSLgN28i/0F2q4KOnNBRlGoWWkEwqiBz9Httl8mw=";
   };
 
-  env.XDG_RUNTIME_DIR = "/tmp";
+  XDG_RUNTIME_DIR = "/tmp";
+
+  nativeBuildInputs = [
+    pkg-config
+    setuptools-scm
+    setuptools-scm-git-archive
+  ];
+
+  buildInputs = [
+    which
+    sphinx
+  ] ++ lib.optionals enableGhostscript [
+    ghostscript
+  ] ++ lib.optionals stdenv.isDarwin [
+    Cocoa
+  ];
+
+  propagatedBuildInputs = [
+    certifi
+    cycler
+    fonttools
+    freetype
+    kiwisolver
+    libpng
+    mock
+    numpy
+    packaging
+    pillow
+    pyparsing
+    python-dateutil
+    pytz
+    qhull
+    tornado
+  ] ++ lib.optionals enableGtk3 [
+    cairo
+    gobject-introspection
+    gtk3
+    pycairo
+    pygobject3
+  ] ++ lib.optionals enableTk [
+    libX11
+    tcl
+    tk
+    tkinter
+  ] ++ lib.optionals enableQt [
+    pyqt5
+  ];
+
+  passthru.config = {
+    directories = { basedirlist = "."; };
+    libs = {
+      system_freetype = true;
+      system_qhull = true;
+    } // lib.optionalAttrs stdenv.isDarwin {
+      # LTO not working in darwin stdenv, see #19312
+      enable_lto = false;
+    };
+  };
+
+  MPLSETUPCFG = writeText "mplsetup.cfg" (lib.generators.toINI {} passthru.config);
 
   # Matplotlib tries to find Tcl/Tk by opening a Tk window and asking the
   # corresponding interpreter object for its library paths. This fails if
@@ -107,80 +107,14 @@ buildPythonPackage rec {
         --replace libX11.so.6 ${libX11}/lib/libX11.so.6 \
         --replace libwayland-client.so.0 ${wayland}/lib/libwayland-client.so.0
     '' +
-    # bring our own system libraries
-    # https://github.com/matplotlib/matplotlib/blob/main/doc/devel/dependencies.rst#c-libraries
+    # avoid matplotlib trying to download dependencies
     ''
       echo "[libs]
       system_freetype=true
       system_qhull=true" > mplsetup.cfg
+      substituteInPlace setup.py \
+        --replace "setuptools_scm>=4,<7" "setuptools_scm>=4"
     '';
-
-  nativeBuildInputs = [
-    pkg-config
-    pybind11
-    setuptools-scm
-  ];
-
-  buildInputs = [
-    ffmpeg-headless
-    freetype
-    qhull
-  ] ++ lib.optionals enableGhostscript [
-    ghostscript
-  ] ++ lib.optionals enableGtk3 [
-    cairo
-    gobject-introspection
-    gtk3
-  ] ++ lib.optionals enableTk [
-    libX11
-    tcl
-    tk
-    tkinter
-  ] ++ lib.optionals stdenv.isDarwin [
-    Cocoa
-  ];
-
-  # clang-11: error: argument unused during compilation: '-fno-strict-overflow' [-Werror,-Wunused-command-line-argument]
-  hardeningDisable = lib.optionals stdenv.isDarwin [
-    "strictoverflow"
-  ];
-
-  propagatedBuildInputs = [
-    # explicit
-    contourpy
-    cycler
-    fonttools
-    kiwisolver
-    numpy
-    packaging
-    pillow
-    pyparsing
-    python-dateutil
-  ] ++ lib.optionals (pythonOlder "3.10") [
-    importlib-resources
-  ] ++ lib.optionals enableGtk3 [
-    pycairo
-    pygobject3
-  ] ++ lib.optionals enableQt [
-    pyqt5
-  ] ++ lib.optionals enableWebagg [
-    tornado
-  ] ++ lib.optionals enableNbagg [
-    ipykernel
-  ];
-
-  passthru.config = {
-    directories = { basedirlist = "."; };
-    libs = {
-      system_freetype = true;
-      system_qhull = true;
-    } // lib.optionalAttrs stdenv.isDarwin {
-      # LTO not working in darwin stdenv, see #19312
-      enable_lto = false;
-    };
-  };
-
-  env.MPLSETUPCFG = writeText "mplsetup.cfg" (lib.generators.toINI {} passthru.config);
 
   # Matplotlib needs to be built against a specific version of freetype in
   # order for all of the tests to pass.
@@ -188,9 +122,8 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Python plotting library, making publication quality plots";
-    homepage = "https://matplotlib.org/";
-    changelog = "https://github.com/matplotlib/matplotlib/releases/tag/v${version}";
-    license = with licenses; [ psfl bsd0 ];
+    homepage    = "https://matplotlib.org/";
+    license     = with licenses; [ psfl bsd0 ];
     maintainers = with maintainers; [ lovek323 veprbl ];
   };
 }
