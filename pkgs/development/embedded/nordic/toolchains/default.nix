@@ -16,11 +16,11 @@
 
 stdenv.mkDerivation rec {
   pname = "ncs-toolchain";
-  version = "2.2.0";
+  version = "2.3.0";
 
   src = fetchurl{
-    url = "https://developer.nordicsemi.com/.pc-tools/toolchain-v2/${pname}-linux-x86_64-v${version}-20221207T155636-f88d497.tar.gz";
-    sha256 = "sha256-ICeq6rd3Y+JPHpYmbHsiMo5Rs/pxyjWzoFsZFNp35qY=";
+    url = "https://developer.nordicsemi.com/.pc-tools/toolchain-v2/${pname}-linux-x86_64-v${version}-20230302T121949-75e5684.tar.gz";
+    sha256 = "sha256-da01HK6lOw/vMs+/594UOfYuaB/G6QpvpSm37iYiBYI=";
   };
 
   dontUnpack = true;
