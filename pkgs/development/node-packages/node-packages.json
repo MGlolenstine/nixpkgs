@@ -229,6 +229,7 @@
 , "mocha"
 , "multi-file-swagger"
 , "musescore-downloader"
+, "nativefier"
 , "near-cli"
 , "neovim"
 , "nijs"
