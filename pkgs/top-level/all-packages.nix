@@ -10756,6 +10756,8 @@ with pkgs;
 
   mdsh = callPackage ../development/tools/documentation/mdsh { };
 
+  mcpe-launcher = callPackage ../games/mcpe-launcher { };
+
   mecab =
     let
       mecab-nodic = callPackage ../tools/text/mecab/nodic.nix { };
