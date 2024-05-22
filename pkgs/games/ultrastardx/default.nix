@@ -31,13 +31,13 @@ let
 
 in stdenv.mkDerivation rec {
   pname = "ultrastardx";
-  version = "2023.9.0";
+  version = "2024.5.1";
 
   src = fetchFromGitHub {
     owner = "UltraStar-Deluxe";
     repo = "USDX";
     rev = "v${version}";
-    hash = "sha256-KvYfWdpgN72F8Y5iFNba0SCjPoS33O3FAdrrC49xoGo=";
+    hash = "sha256-HtvKy3uQwIO2BiLUqIcv9crf9Ngq0dmYOm6E8Gm2EHs=";
   };
 
   nativeBuildInputs = [ pkg-config autoreconfHook ];
