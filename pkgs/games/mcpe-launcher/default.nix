@@ -3,11 +3,11 @@
 }:
 appimageTools.wrapType2 rec {
   name = "mcpe-launcher";
-  version = "0.10.0-716";
+  version = "0.14.2-792";
 
   src = fetchurl {
     url = "https://github.com/minecraft-linux/appimage-builder/releases/download/v${version}/Minecraft_Bedrock_Launcher-x86_64-v${builtins.replaceStrings ["-"] ["."] version}.AppImage";
-    hash = "sha256-kHJJau1WMATbqz5L1QSURbG7OC+cHV4tKvdolNzltA4=";
+    hash = "sha256-7tEaULa5wPQbKPpa7RJL5cBcYBfQuWW9xD/cHCgX5KE=";
   };
   extraPkgs = pkgs: with pkgs; [
     curl
